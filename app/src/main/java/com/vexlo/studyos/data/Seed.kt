@@ -18,6 +18,29 @@ suspend fun seedAlarms(dao: StudyDao) {
     ).forEach { dao.insertAlarm(it) }
 }
 
+/**
+ * Your papers from "FOCLIS draft undergraduate examination timetable, Semester I 2026/2027".
+ * Morning papers 9:00-12:00, afternoon papers 2:00-5:00 PM. Check the final timetable for changes.
+ */
+suspend fun seedPapers(dao: StudyDao) {
+    val courses = dao.coursesOnce()
+    val existing = dao.papersOnce()
+    val rows = listOf(
+        listOf("CA", "2026-11-28", "14:00", ""),
+        listOf("VP", "2026-11-30", "09:00", "Practical"),
+        listOf("RM", "2026-12-02", "14:00", ""),
+        listOf("DB", "2026-12-05", "09:00", "Practical"),
+        listOf("UI", "2026-12-08", "14:00", ""),
+        listOf("GICT", "2026-12-10", "09:00", "")
+    )
+    rows.forEach { r ->
+        val c = courses.firstOrNull { it.shortName == r[0] } ?: return@forEach
+        if (existing.none { it.courseId == c.id && it.date == r[1] }) {
+            dao.insertPaper(ExamPaperEntity(courseId = c.id, date = r[1], time = r[2], venue = r[3]))
+        }
+    }
+}
+
 /** First-run content. Starter topics are a generic outline - edit them to match your lecturer's syllabus. */
 suspend fun seedIfEmpty(dao: StudyDao) {
     if (dao.courseCount() > 0) return

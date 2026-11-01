@@ -1,6 +1,12 @@
 package com.vexlo.studyos.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -15,23 +21,68 @@ import androidx.compose.ui.unit.sp
 import com.vexlo.studyos.data.*
 import com.vexlo.studyos.domain.Logic
 
+/** One course row: patterned thumbnail, name, code + readiness pills, progress and a menu. */
 @Composable
-fun CoursesScreen(d: Data, onOpen: (Long) -> Unit) {
-    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { Muted("Tap a course for topics, notes, assignments and exam questions.") }
-        d.courses.forEach { c ->
-            item {
-                val (done, total) = Logic.topicCounts(d, c.id)
-                val col = CourseColors[c.colorIdx % CourseColors.size]
-                VCard(onClick = { onOpen(c.id) }) {
-                    Text(c.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    ProgressBar(if (total == 0) 0f else done.toFloat() / total, color = col)
-                    Spacer(Modifier.height(6.dp))
-                    Muted("$done / $total topics - ${Logic.fmt(Logic.courseMinutes(d, c.id))} studied - readiness ${(Logic.readiness(d, c.id) * 100).toInt()}%")
+fun CourseRow(c: CourseEntity, d: Data, onOpen: () -> Unit, onStudy: () -> Unit) {
+    val col = CourseColors[c.colorIdx % CourseColors.size]
+    var menu by remember { mutableStateOf(false) }
+    val (done, total) = Logic.topicCounts(d, c.id)
+    val ready = (Logic.readiness(d, c.id) * 100).toInt()
+    VCard(onClick = onOpen) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CourseThumb(col, c.id.toInt())
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(c.name, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextHi)
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val code = courseCode(c.shortName)
+                    Pill(if (code.isEmpty()) "SEM 1" else "$code - SEM 1", Color(0xFFFFE8D9), Color(0xFF8A4B1F))
+                    Pill("$ready% ready", Mint.copy(alpha = 0.16f), Mint)
+                }
+            }
+            Box {
+                Box(Modifier.size(40.dp).clip(CircleShape).clickable { menu = true }, contentAlignment = Alignment.Center) {
+                    Icon(Icons.Filled.MoreVert, contentDescription = "Course menu", tint = TextHi)
+                }
+                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                    DropdownMenuItem(text = { Text("Open course") }, onClick = { menu = false; onOpen() })
+                    DropdownMenuItem(text = { Text("Study this course") }, onClick = { menu = false; onStudy() })
                 }
             }
         }
+        Spacer(Modifier.height(12.dp))
+        ProgressBar(if (total == 0) 0f else done.toFloat() / total, color = col)
+        Spacer(Modifier.height(6.dp))
+        Muted("$done / $total topics - ${Logic.fmt(Logic.courseMinutes(d, c.id))} studied")
+    }
+}
+
+@Composable
+fun CoursesScreen(d: Data, onOpen: (Long) -> Unit, onStudy: (Long) -> Unit) {
+    var query by rememberSaveable { mutableStateOf("") }
+    var byReady by rememberSaveable { mutableStateOf(false) }
+    val list = d.courses
+        .filter { it.name.contains(query.trim(), ignoreCase = true) }
+        .let { l -> if (byReady) l.sortedBy { Logic.readiness(d, it.id) } else l.sortedBy { it.name } }
+
+    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item {
+            OutlinedTextField(
+                value = query, onValueChange = { query = it },
+                placeholder = { Text("Filter my courses") },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                singleLine = true, modifier = Modifier.fillMaxWidth()
+            )
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Chip("A - Z", !byReady) { byReady = false }
+                Chip("Least ready first", byReady) { byReady = true }
+            }
+        }
+        if (list.isEmpty()) item { Muted("No course matches \"$query\".") }
+        list.forEach { c -> item { CourseRow(c, d, onOpen = { onOpen(c.id) }, onStudy = { onStudy(c.id) }) } }
     }
 }
 
@@ -51,9 +102,7 @@ fun CourseDetail(d: Data, courseId: Long, vm: MainViewModel, onBack: () -> Unit)
             ProgressBar(if (total == 0) 0f else done.toFloat() / total, color = CourseColors[course.colorIdx % CourseColors.size])
             Muted("$done of $total topics complete", Modifier.padding(top = 4.dp))
         }
-        Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            tabs.forEachIndexed { i, t -> Chip(t, tab == i) { tab = i } }
-        }
+        UnderlineTabs(tabs, tab) { tab = it }
         when (tab) {
             0 -> TopicsTab(d, courseId, vm)
             1 -> NotesTab(d, courseId, vm)

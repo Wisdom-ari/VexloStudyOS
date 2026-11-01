@@ -1,6 +1,7 @@
 package com.vexlo.studyos.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -25,6 +26,7 @@ fun AppRoot(vm: MainViewModel) {
     var sub by rememberSaveable { mutableStateOf("") }
     var courseId by rememberSaveable { mutableStateOf(-1L) }
     var editId by rememberSaveable { mutableStateOf(0L) }
+    var timerCourse by rememberSaveable { mutableStateOf(-1L) }
 
     val goBack: () -> Unit = { sub = if (sub == "alarmEdit") "alarms" else "" }
     BackHandler(enabled = sub.isNotEmpty()) { goBack() }
@@ -40,6 +42,8 @@ fun AppRoot(vm: MainViewModel) {
     Scaffold(
         containerColor = Navy,
         bottomBar = {
+            Column {
+            Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
             NavigationBar(containerColor = Surface1) {
                 tabs.forEachIndexed { i, t ->
                     NavigationBarItem(
@@ -48,14 +52,15 @@ fun AppRoot(vm: MainViewModel) {
                         icon = { Icon(t.icon, contentDescription = t.label) },
                         label = { Text(t.label) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.White,
-                            indicatorColor = Blue,
+                            selectedIconColor = Blue,
+                            indicatorColor = Blue.copy(alpha = 0.14f),
                             selectedTextColor = Blue,
                             unselectedIconColor = TextLo,
                             unselectedTextColor = TextLo
                         )
                     )
                 }
+            }
             }
         }
     ) { inner ->
@@ -67,27 +72,29 @@ fun AppRoot(vm: MainViewModel) {
                 sub == "course" -> HeaderBanner(d.courses.firstOrNull { it.id == courseId }?.name ?: "Course", null, goBack)
                 sub == "alarms" -> HeaderBanner("My alarms", "Study schedule", goBack)
                 sub == "alarmEdit" -> HeaderBanner(if (editId == 0L) "New alarm" else "Edit alarm", null, goBack)
-                tab == 1 -> HeaderBanner("Weekly timetable", "Plan each day")
-                tab == 2 -> HeaderBanner("Courses", "Topics, notes, assignments, questions")
+                tab == 1 -> HeaderBanner("Timetable", "Study plan and exam papers")
+                tab == 2 -> HeaderBanner("Course overview", "Semester 1")
                 tab == 3 -> HeaderBanner("Progress", "Calculated from your real activity")
                 tab == 4 -> HeaderBanner("Settings", "Theme, alarms, data")
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 when {
-                    sub == "timer" -> TimerScreen(d, p, vm) { sub = "" }
+                    sub == "timer" -> TimerScreen(d, p, vm, timerCourse) { sub = "" }
                     sub == "exam" -> ExamScreen(d, p, vm) { sub = "" }
                     sub == "course" -> CourseDetail(d, courseId, vm) { sub = "" }
                     sub == "alarms" -> AlarmsScreen(d, vm) { id -> editId = id; sub = "alarmEdit" }
                     sub == "alarmEdit" -> AlarmEditScreen(d, p, editId, vm) { sub = "alarms" }
                     tab == 0 -> HomeScreen(
                         d, p, vm,
-                        openTimer = { sub = "timer" },
+                        openTimer = { timerCourse = -1L; sub = "timer" },
                         openExam = { sub = "exam" },
                         openAlarms = { sub = "alarms" },
-                        editAlarm = { id -> editId = id; sub = "alarmEdit" }
+                        editAlarm = { id -> editId = id; sub = "alarmEdit" },
+                        openCourse = { id -> courseId = id; sub = "course" },
+                        studyCourse = { id -> timerCourse = id; sub = "timer" }
                     )
                     tab == 1 -> TimetableScreen(d, vm)
-                    tab == 2 -> CoursesScreen(d) { id -> courseId = id; sub = "course" }
+                    tab == 2 -> CoursesScreen(d, onOpen = { id -> courseId = id; sub = "course" }, onStudy = { id -> timerCourse = id; sub = "timer" })
                     tab == 3 -> ProgressScreen(d, p)
                     else -> SettingsScreen(d, p, vm) { sub = "alarms" }
                 }

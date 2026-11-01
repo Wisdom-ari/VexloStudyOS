@@ -12,15 +12,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 /** Accent colours are the same in light and dark. */
-val Blue = Color(0xFF3D7BFF)
-val Purple = Color(0xFF8B5CF6)
-val Mint = Color(0xFF34D399)
-val Amber = Color(0xFFFBBF24)
-val Rose = Color(0xFFFB7185)
-val Cyan = Color(0xFF22D3EE)
+val Blue = Color(0xFF0A6EBD)
+val Purple = Color(0xFF6C5CE7)
+val Mint = Color(0xFF10B981)
+val Amber = Color(0xFFF5B301)
+val Rose = Color(0xFFE5484D)
+val Cyan = Color(0xFF0EA5C6)
 
-val Grad = Brush.horizontalGradient(listOf(Blue, Purple))
-val CourseColors = listOf(Blue, Purple, Mint, Amber, Rose, Cyan)
+val Grad = Brush.horizontalGradient(listOf(Color(0xFF0A6EBD), Color(0xFF2B8DDB)))
+
+/** Course thumbnails: green, blue, pink, grey, violet, yellow. */
+val CourseColors = listOf(
+    Color(0xFF10B981), Color(0xFF1E88E5), Color(0xFFF472B6),
+    Color(0xFF9AA5B1), Color(0xFF6C5CE7), Color(0xFFFBBF24)
+)
 
 /** Colours that change with the theme. */
 data class Palette(
@@ -30,27 +35,30 @@ data class Palette(
     val surface2: Color,
     val textHi: Color,
     val textLo: Color,
-    val header: Brush
+    val border: Color,
+    val strip: Color
 )
 
 val DarkPalette = Palette(
     dark = true,
-    bg = Color(0xFF0A0E1F),
-    surface1 = Color(0xFF131A33),
-    surface2 = Color(0xFF1B2447),
-    textHi = Color(0xFFEAF0FF),
-    textLo = Color(0xFF93A0C4),
-    header = Brush.verticalGradient(listOf(Color(0xFF3B2F8F), Color(0xFF1E3A8A)))
+    bg = Color(0xFF0E1420),
+    surface1 = Color(0xFF172033),
+    surface2 = Color(0xFF202B42),
+    textHi = Color(0xFFE8EEF8),
+    textLo = Color(0xFF9AA7BD),
+    border = Color(0xFF2A3650),
+    strip = Color(0xFF0A3A63)
 )
 
 val LightPalette = Palette(
     dark = false,
-    bg = Color(0xFFEEF1FA),
+    bg = Color(0xFFF2F5F9),
     surface1 = Color(0xFFFFFFFF),
-    surface2 = Color(0xFFE4E9F7),
-    textHi = Color(0xFF1A2040),
-    textLo = Color(0xFF6B7499),
-    header = Brush.verticalGradient(listOf(Color(0xFF6C5CE7), Color(0xFF4A7BF7)))
+    surface2 = Color(0xFFEAEFF5),
+    textHi = Color(0xFF1B2733),
+    textLo = Color(0xFF667385),
+    border = Color(0xFFDDE3EB),
+    strip = Color(0xFF0A6EBD)
 )
 
 val LocalPalette = staticCompositionLocalOf { DarkPalette }
@@ -60,7 +68,8 @@ val Surface1: Color @Composable @ReadOnlyComposable get() = LocalPalette.current
 val Surface2: Color @Composable @ReadOnlyComposable get() = LocalPalette.current.surface2
 val TextHi: Color @Composable @ReadOnlyComposable get() = LocalPalette.current.textHi
 val TextLo: Color @Composable @ReadOnlyComposable get() = LocalPalette.current.textLo
-val HeaderBrush: Brush @Composable @ReadOnlyComposable get() = LocalPalette.current.header
+val Border: Color @Composable @ReadOnlyComposable get() = LocalPalette.current.border
+val Strip: Color @Composable @ReadOnlyComposable get() = LocalPalette.current.strip
 val IsDark: Boolean @Composable @ReadOnlyComposable get() = LocalPalette.current.dark
 
 /** mode: 0 = follow system, 1 = light, 2 = dark. */
@@ -77,14 +86,14 @@ fun StudyTheme(mode: Int, content: @Composable () -> Unit) {
             primary = Blue, secondary = Purple, background = palette.bg, surface = palette.surface1,
             surfaceVariant = palette.surface2, onPrimary = Color.White, onSecondary = Color.White,
             onBackground = palette.textHi, onSurface = palette.textHi, onSurfaceVariant = palette.textLo,
-            outline = Color(0xFF3A4570)
+            outline = palette.border
         )
     } else {
         lightColorScheme(
             primary = Blue, secondary = Purple, background = palette.bg, surface = palette.surface1,
             surfaceVariant = palette.surface2, onPrimary = Color.White, onSecondary = Color.White,
             onBackground = palette.textHi, onSurface = palette.textHi, onSurfaceVariant = palette.textLo,
-            outline = Color(0xFFB8C0DC)
+            outline = palette.border
         )
     }
     CompositionLocalProvider(LocalPalette provides palette) {

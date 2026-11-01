@@ -18,9 +18,9 @@ import com.vexlo.studyos.domain.Logic
 import java.util.Locale
 
 @Composable
-fun TimerScreen(d: Data, p: Prefs, vm: MainViewModel, onBack: () -> Unit) {
+fun TimerScreen(d: Data, p: Prefs, vm: MainViewModel, initialCourse: Long, onBack: () -> Unit) {
     val t by vm.timer.state.collectAsState()
-    var course by rememberSaveable { mutableStateOf<Long?>(null) }
+    var course by rememberSaveable(initialCourse) { mutableStateOf<Long?>(if (initialCourse >= 0) initialCourse else null) }
     var focus by rememberSaveable(p.focusMin) { mutableStateOf(p.focusMin) }
     var brk by rememberSaveable(p.breakMin) { mutableStateOf(p.breakMin) }
     val view = LocalView.current

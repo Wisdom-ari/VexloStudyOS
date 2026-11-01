@@ -26,6 +26,22 @@ object Logic {
     fun hm12(h: Int, m: Int): String = String.format(Locale.US, "%d:%02d", if (h % 12 == 0) 12 else h % 12, m)
     fun ampm(h: Int): String = if (h >= 12) "PM" else "AM"
 
+    fun time12(t: String): String {
+        val p = t.split(":")
+        val h = p.getOrNull(0)?.toIntOrNull() ?: return t
+        val m = p.getOrNull(1)?.toIntOrNull() ?: 0
+        return hm12(h, m) + " " + ampm(h)
+    }
+
+    /** Papers last three hours: "2:00 PM - 5:00 PM". */
+    fun timeRange(t: String): String {
+        val p = t.split(":")
+        val h = p.getOrNull(0)?.toIntOrNull() ?: return t
+        val m = p.getOrNull(1)?.toIntOrNull() ?: 0
+        val e = (h + 3) % 24
+        return hm12(h, m) + " " + ampm(h) + " - " + hm12(e, m) + " " + ampm(e)
+    }
+
     fun untilText(mins: Long): String = when {
         mins < 1 -> "in <1 min"
         mins < 60 -> "in $mins min"

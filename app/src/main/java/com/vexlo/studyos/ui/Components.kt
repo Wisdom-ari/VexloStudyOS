@@ -3,6 +3,7 @@ package com.vexlo.studyos.ui
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,12 +30,14 @@ import java.time.LocalDate
 
 @Composable
 fun VCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
-    val m = if (onClick != null) modifier.clip(RoundedCornerShape(24.dp)).clickable(onClick = onClick) else modifier
+    val shape = RoundedCornerShape(16.dp)
+    val m = if (onClick != null) modifier.clip(shape).clickable(onClick = onClick) else modifier
     Card(
         modifier = m.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = shape,
         colors = CardDefaults.cardColors(containerColor = Surface1),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (IsDark) 0.dp else 3.dp)
+        border = BorderStroke(1.dp, Border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(Modifier.padding(16.dp), content = content)
     }
@@ -97,7 +100,7 @@ fun DayDot(text: String, selected: Boolean, onClick: () -> Unit) {
         Modifier
             .size(34.dp)
             .clip(CircleShape)
-            .background(if (selected) Purple else Surface2)
+            .background(if (selected) Blue else Surface2)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -242,4 +245,60 @@ fun pickDate(ctx: Context, initial: String, onPick: (String) -> Unit) {
 
 fun pickTime(ctx: Context, h: Int, m: Int, onPick: (Int, Int) -> Unit) {
     TimePickerDialog(ctx, { _, hh, mm -> onPick(hh, mm) }, h, m, false).show()
+}
+
+/** Underlined tab strip like the KabVile dashboard. */
+@Composable
+fun UnderlineTabs(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+    Column(Modifier.fillMaxWidth().background(Surface1)) {
+        Row(Modifier.fillMaxWidth()) {
+            labels.forEachIndexed { i, l ->
+                Column(Modifier.weight(1f).clickable { onSelect(i) }, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        l, Modifier.padding(vertical = 14.dp), fontSize = 15.sp,
+                        fontWeight = if (i == selected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (i == selected) TextHi else TextLo
+                    )
+                    Box(Modifier.fillMaxWidth().height(3.dp).background(if (i == selected) Blue else Color.Transparent))
+                }
+            }
+        }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
+    }
+}
+
+@Composable
+fun Pill(text: String, bg: Color, fg: Color) {
+    Box(Modifier.clip(RoundedCornerShape(50)).background(bg).padding(horizontal = 10.dp, vertical = 4.dp)) {
+        Text(text, fontSize = 12.sp, color = fg, fontWeight = FontWeight.Medium)
+    }
+}
+
+/** Course tile: coloured square with a soft mosaic pattern (stable per course). */
+@Composable
+fun CourseThumb(color: Color, seed: Int, sizeDp: Int = 64) {
+    Canvas(Modifier.size(sizeDp.dp).clip(RoundedCornerShape(12.dp))) {
+        drawRect(color)
+        val n = 5
+        val cell = this.size.width / n
+        var s = seed * 7919 + 17
+        for (r in 0 until n) {
+            for (c in 0 until n) {
+                s = (s * 1103515245 + 12345) and 0x7fffffff
+                val a = (s % 100) / 100f * 0.35f
+                drawRect(Color.White.copy(alpha = a), Offset(c * cell, r * cell), Size(cell, cell))
+            }
+        }
+    }
+}
+
+/** University course codes from the FOCLIS timetable. */
+fun courseCode(short: String): String = when (short) {
+    "CA" -> "DIT2101"
+    "DB" -> "DIT2102"
+    "UI" -> "DIT2103"
+    "GICT" -> "DIT2104"
+    "RM" -> "DIT2105"
+    "VP" -> "DIT2106"
+    else -> ""
 }

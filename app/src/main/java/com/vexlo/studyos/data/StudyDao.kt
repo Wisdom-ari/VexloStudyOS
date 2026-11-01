@@ -67,6 +67,7 @@ interface StudyDao {
 
     // Exam papers
     @Query("SELECT * FROM papers ORDER BY date, time") fun papers(): Flow<List<ExamPaperEntity>>
+    @Query("SELECT * FROM papers ORDER BY date, time") suspend fun papersOnce(): List<ExamPaperEntity>
     @Insert suspend fun insertPaper(p: ExamPaperEntity): Long
     @Delete suspend fun deletePaper(p: ExamPaperEntity)
 

@@ -42,38 +42,32 @@ fun typeColor(type: String): Color = when (type) {
     else -> Purple
 }
 
-/** Gradient header with a curved bottom edge; extends behind the status bar. */
+/** KabVile-style top bar: blue strip behind the status bar, then a white app bar with the title. */
 @Composable
 fun HeaderBanner(title: String, subtitle: String? = null, onBack: (() -> Unit)? = null) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-            .background(HeaderBrush)
-            .statusBarsPadding()
-            .padding(start = 12.dp, end = 16.dp, top = 12.dp, bottom = 22.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+    Column(Modifier.fillMaxWidth().background(Surface1)) {
+        Box(Modifier.fillMaxWidth().background(Strip).statusBarsPadding()) { Spacer(Modifier.height(0.dp)) }
+        Row(
+            Modifier.fillMaxWidth().padding(start = 8.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             if (onBack != null) {
                 Box(
-                    Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.18f))
-                        .clickable(onClick = onBack),
+                    Modifier.size(40.dp).clip(CircleShape).clickable(onClick = onBack),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Blue)
                 }
-                Spacer(Modifier.width(10.dp))
-            } else {
                 Spacer(Modifier.width(4.dp))
+            } else {
+                Spacer(Modifier.width(8.dp))
             }
             Column {
-                Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                if (subtitle != null) Text(subtitle, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextHi, maxLines = 1)
+                if (subtitle != null) Text(subtitle, fontSize = 12.sp, color = TextLo, maxLines = 1)
             }
         }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
     }
 }
 

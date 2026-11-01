@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.vexlo.studyos.data.Data
 import com.vexlo.studyos.domain.Logic
 
@@ -18,6 +19,63 @@ private val DAY_SHORT = listOf("M", "T", "W", "T", "F", "S", "S")
 
 @Composable
 fun TimetableScreen(d: Data, vm: MainViewModel) {
+    var tab by rememberSaveable { mutableStateOf(0) }
+    Column(Modifier.fillMaxSize()) {
+        UnderlineTabs(listOf("Exam papers", "Study plan"), tab) { tab = it }
+        Box(Modifier.weight(1f)) {
+            if (tab == 0) ExamPapersList(d) else StudyPlan(d, vm)
+        }
+    }
+}
+
+@Composable
+private fun ExamPapersList(d: Data) {
+    val today = Logic.today()
+    val papers = d.papers.sortedWith(compareBy({ it.date }, { it.time }))
+    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item { H2("FOCLIS examinations, Nov - Dec 2026") }
+        item { Muted("Draft timetable. Check the faculty notice board for changes. Times are East Africa Time.") }
+        if (papers.isEmpty()) item { Muted("No papers yet. Add them from Home > Exam mode.") }
+        papers.forEach { pp ->
+            item {
+                val c = d.courses.firstOrNull { it.id == pp.courseId }
+                val date = Logic.parse(pp.date, today)
+                val days = java.time.temporal.ChronoUnit.DAYS.between(today, date)
+                VCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.width(56.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(date.dayOfMonth.toString(), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Blue)
+                            Text(
+                                date.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH),
+                                fontSize = 12.sp, color = TextLo
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(c?.name ?: "Paper", fontWeight = FontWeight.SemiBold)
+                            Muted(
+                                date.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH) +
+                                    " - " + Logic.timeRange(pp.time)
+                            )
+                            Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                val code = courseCode(c?.shortName ?: "")
+                                if (code.isNotEmpty()) Pill(code, Blue.copy(alpha = 0.12f), Blue)
+                                if (pp.venue.isNotBlank()) Pill(pp.venue, Amber.copy(alpha = 0.2f), TextHi)
+                                Pill(
+                                    when { days > 0 -> "in $days d"; days == 0L -> "today"; else -> "done" },
+                                    Mint.copy(alpha = 0.16f), Mint
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StudyPlan(d: Data, vm: MainViewModel) {
     var dayIdx by rememberSaveable { mutableStateOf(Logic.today().dayOfWeek.value.dec()) }
     val day: Int = dayIdx.inc()
     var adding by remember { mutableStateOf(false) }
