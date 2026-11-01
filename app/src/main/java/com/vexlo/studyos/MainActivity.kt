@@ -12,6 +12,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import com.vexlo.studyos.ui.AppRoot
 import com.vexlo.studyos.ui.MainViewModel
@@ -24,10 +26,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            navigationBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
         )
         setContent {
-            StudyTheme {
+            val prefs by vm.prefs.collectAsState()
+            StudyTheme(prefs.themeMode) {
                 val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
                 LaunchedEffect(Unit) {
                     if (Build.VERSION.SDK_INT >= 33 &&

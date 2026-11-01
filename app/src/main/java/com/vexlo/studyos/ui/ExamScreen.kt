@@ -31,8 +31,6 @@ fun ExamScreen(d: Data, p: Prefs, vm: MainViewModel, onBack: () -> Unit) {
     val name = { id: Long -> d.courses.firstOrNull { it.id == id }?.name ?: "Course" }
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { SoftButton("< Back", onClick = onBack) }
-        item { H1("Examination mode") }
         item {
             VCard {
                 Muted("First exam: ${p.examDate}")

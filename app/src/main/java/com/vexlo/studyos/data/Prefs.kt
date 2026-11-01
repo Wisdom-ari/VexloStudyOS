@@ -2,6 +2,7 @@ package com.vexlo.studyos.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -18,7 +19,9 @@ data class Prefs(
     val focusMin: Int = 25,
     val breakMin: Int = 5,
     val snoozeMin: Int = 10,
-    val lastReminder: String = ""
+    val lastReminder: String = "",
+    val themeMode: Int = 2,
+    val vibrate: Boolean = true
 )
 
 object PrefKeys {
@@ -29,6 +32,8 @@ object PrefKeys {
     val BREAK = intPreferencesKey("break_min")
     val SNOOZE = intPreferencesKey("snooze_min")
     val LAST_REMINDER = stringPreferencesKey("last_reminder")
+    val THEME = intPreferencesKey("theme_mode")
+    val VIBRATE = booleanPreferencesKey("vibrate")
 }
 
 fun Context.prefsFlow(): Flow<Prefs> = dataStore.data.map { p ->
@@ -39,7 +44,9 @@ fun Context.prefsFlow(): Flow<Prefs> = dataStore.data.map { p ->
         focusMin = p[PrefKeys.FOCUS] ?: 25,
         breakMin = p[PrefKeys.BREAK] ?: 5,
         snoozeMin = p[PrefKeys.SNOOZE] ?: 10,
-        lastReminder = p[PrefKeys.LAST_REMINDER] ?: ""
+        lastReminder = p[PrefKeys.LAST_REMINDER] ?: "",
+        themeMode = p[PrefKeys.THEME] ?: 2,
+        vibrate = p[PrefKeys.VIBRATE] ?: true
     )
 }
 

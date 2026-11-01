@@ -1,5 +1,6 @@
 package com.vexlo.studyos.domain
 
+import com.vexlo.studyos.alarm.AlarmScheduler
 import com.vexlo.studyos.data.AlarmEntity
 import com.vexlo.studyos.data.CourseEntity
 import com.vexlo.studyos.data.Data
@@ -9,6 +10,7 @@ import com.vexlo.studyos.data.TimetableEntity
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
@@ -21,6 +23,22 @@ object Logic {
     fun isoOf(ms: Long): String = Instant.ofEpochMilli(ms).atZone(zone).toLocalDate().toString()
     fun fmt(min: Int): String = if (min >= 60) "${min / 60}h ${min % 60}m" else "${min}m"
     fun hhmm(h: Int, m: Int): String = String.format(Locale.US, "%02d:%02d", h, m)
+    fun hm12(h: Int, m: Int): String = String.format(Locale.US, "%d:%02d", if (h % 12 == 0) 12 else h % 12, m)
+    fun ampm(h: Int): String = if (h >= 12) "PM" else "AM"
+
+    fun untilText(mins: Long): String = when {
+        mins < 1 -> "in <1 min"
+        mins < 60 -> "in $mins min"
+        mins < 1440 -> "in ${mins / 60} h ${mins % 60} min"
+        else -> "in ${mins / 1440} d ${(mins % 1440) / 60} h"
+    }
+
+    /** "in 1 h 20 min" for the next time this alarm fires, or Off. */
+    fun alarmIn(a: AlarmEntity): String {
+        if (!a.enabled) return "Off"
+        val t = AlarmScheduler.nextTrigger(a) ?: return "No days set"
+        return untilText(ChronoUnit.MINUTES.between(ZonedDateTime.now(zone), t))
+    }
 
     fun minutesByDate(s: List<SessionEntity>): Map<String, Int> =
         s.groupBy { it.date }.mapValues { e -> e.value.sumOf { it.durationSec } / 60 }

@@ -26,7 +26,6 @@ fun TimetableScreen(d: Data, vm: MainViewModel) {
     val slots = Logic.daySlots(date, d.alarms, d.timetable, d.courses)
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { H1("Weekly timetable") }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 DAY_SHORT.forEachIndexed { i, s -> DayDot(s, dayIdx == i) { dayIdx = i } }

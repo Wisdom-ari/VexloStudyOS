@@ -33,7 +33,6 @@ fun ProgressScreen(d: Data, p: Prefs) {
     val readiness = Logic.overallReadiness(d)
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        item { H1("Progress") }
         item {
             VCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {

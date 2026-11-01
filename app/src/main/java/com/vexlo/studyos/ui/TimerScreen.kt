@@ -35,8 +35,6 @@ fun TimerScreen(d: Data, p: Prefs, vm: MainViewModel, onBack: () -> Unit) {
     val idleMm = String.format(Locale.US, "%02d:00", focus)
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        SoftButton("< Back", onClick = onBack)
-        H1("Study timer")
         Muted("Studied today: ${Logic.fmt(todayMin)} of ${p.targetHours}h")
 
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {

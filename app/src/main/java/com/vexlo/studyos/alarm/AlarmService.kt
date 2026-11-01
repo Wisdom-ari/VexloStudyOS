@@ -82,8 +82,11 @@ class AlarmService : Service() {
             var sound: String? = null
             var alarm: AlarmEntity? = null
             var snoozeMin = 10
+            var vibrate = true
             withContext(Dispatchers.IO) {
-                snoozeMin = applicationContext.prefsFlow().first().snoozeMin
+                val pr = applicationContext.prefsFlow().first()
+                snoozeMin = pr.snoozeMin
+                vibrate = pr.vibrate
                 if (id > 0) {
                     val dao = AppDatabase.get(applicationContext).dao()
                     alarm = dao.getAlarm(id)
@@ -103,7 +106,7 @@ class AlarmService : Service() {
             }
 
             val short = kind == "timer" || kind == "test"
-            startRinging(sound, short)
+            startRinging(sound, short, vibrate)
             stopJob?.cancel()
             stopJob = launch {
                 delay(if (short) 20_000L else 90_000L)
@@ -161,7 +164,7 @@ class AlarmService : Service() {
         }
     }
 
-    private fun startRinging(sound: String?, short: Boolean) {
+    private fun startRinging(sound: String?, short: Boolean, vibrate: Boolean) {
         stopRinging()
         val custom = sound?.let { runCatching { Uri.parse(it) }.getOrNull() }
         val ok = custom != null && play(custom)
@@ -170,7 +173,7 @@ class AlarmService : Service() {
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             if (def != null) play(def)
         }
-        val vib = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        val vib = if (vibrate) getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator else null
         vib?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 600, 400), if (short) -1 else 0))
     }
 

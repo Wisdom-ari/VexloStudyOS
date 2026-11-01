@@ -18,7 +18,6 @@ import com.vexlo.studyos.domain.Logic
 @Composable
 fun CoursesScreen(d: Data, onOpen: (Long) -> Unit) {
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { H1("Courses") }
         item { Muted("Tap a course for topics, notes, assignments and exam questions.") }
         d.courses.forEach { c ->
             item {
@@ -49,10 +48,6 @@ fun CourseDetail(d: Data, courseId: Long, vm: MainViewModel, onBack: () -> Unit)
 
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(16.dp)) {
-            SoftButton("< Courses", onClick = onBack)
-            Spacer(Modifier.height(10.dp))
-            H1(course.name)
-            Spacer(Modifier.height(8.dp))
             ProgressBar(if (total == 0) 0f else done.toFloat() / total, color = CourseColors[course.colorIdx % CourseColors.size])
             Muted("$done of $total topics complete", Modifier.padding(top = 4.dp))
         }

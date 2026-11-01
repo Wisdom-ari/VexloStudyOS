@@ -29,11 +29,12 @@ import java.time.LocalDate
 
 @Composable
 fun VCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
-    val m = if (onClick != null) modifier.clip(RoundedCornerShape(20.dp)).clickable(onClick = onClick) else modifier
+    val m = if (onClick != null) modifier.clip(RoundedCornerShape(24.dp)).clickable(onClick = onClick) else modifier
     Card(
         modifier = m.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Surface1)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Surface1),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (IsDark) 0.dp else 3.dp)
     ) {
         Column(Modifier.padding(16.dp), content = content)
     }
@@ -165,12 +166,13 @@ fun BarChart(values: List<Float>, labels: List<String>, valueLabels: List<String
 
 @Composable
 fun Ring(frac: Float, size: Int, stroke: Int, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val track = Surface2
     Box(modifier.size(size.dp), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val w = stroke.dp.toPx()
             val inset = w / 2
             val arcSize = Size(this.size.width - w, this.size.height - w)
-            drawArc(color = Surface2, startAngle = -90f, sweepAngle = 360f, useCenter = false, topLeft = Offset(inset, inset), size = arcSize, style = Stroke(w, cap = StrokeCap.Round))
+            drawArc(color = track, startAngle = -90f, sweepAngle = 360f, useCenter = false, topLeft = Offset(inset, inset), size = arcSize, style = Stroke(w, cap = StrokeCap.Round))
             drawArc(
                 brush = Brush.sweepGradient(listOf(Blue, Purple, Blue)),
                 startAngle = -90f, sweepAngle = 360f * frac.coerceIn(0f, 1f), useCenter = false,

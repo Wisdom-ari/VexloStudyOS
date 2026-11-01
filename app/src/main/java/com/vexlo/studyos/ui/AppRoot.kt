@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
 private data class Tab(val label: String, val icon: ImageVector)
@@ -23,8 +24,10 @@ fun AppRoot(vm: MainViewModel) {
     var tab by rememberSaveable { mutableStateOf(0) }
     var sub by rememberSaveable { mutableStateOf("") }
     var courseId by rememberSaveable { mutableStateOf(-1L) }
+    var editId by rememberSaveable { mutableStateOf(0L) }
 
-    BackHandler(enabled = sub.isNotEmpty()) { sub = "" }
+    val goBack: () -> Unit = { sub = if (sub == "alarmEdit") "alarms" else "" }
+    BackHandler(enabled = sub.isNotEmpty()) { goBack() }
 
     val tabs = listOf(
         Tab("Home", Icons.Filled.Home),
@@ -45,7 +48,7 @@ fun AppRoot(vm: MainViewModel) {
                         icon = { Icon(t.icon, contentDescription = t.label) },
                         label = { Text(t.label) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Navy,
+                            selectedIconColor = Color.White,
                             indicatorColor = Blue,
                             selectedTextColor = Blue,
                             unselectedIconColor = TextLo,
@@ -56,16 +59,38 @@ fun AppRoot(vm: MainViewModel) {
             }
         }
     ) { inner ->
-        Box(Modifier.padding(inner).statusBarsPadding().fillMaxSize()) {
+        Column(Modifier.padding(inner).fillMaxSize()) {
+            // Header: Home draws its own big clock header; every other screen gets a banner.
             when {
-                sub == "timer" -> TimerScreen(d, p, vm) { sub = "" }
-                sub == "exam" -> ExamScreen(d, p, vm) { sub = "" }
-                sub == "course" -> CourseDetail(d, courseId, vm) { sub = "" }
-                tab == 0 -> HomeScreen(d, p, vm, openTimer = { sub = "timer" }, openExam = { sub = "exam" })
-                tab == 1 -> TimetableScreen(d, vm)
-                tab == 2 -> CoursesScreen(d) { id -> courseId = id; sub = "course" }
-                tab == 3 -> ProgressScreen(d, p)
-                else -> SettingsScreen(d, p, vm)
+                sub == "timer" -> HeaderBanner("Study timer", "Focus, break, repeat", goBack)
+                sub == "exam" -> HeaderBanner("Examination mode", "Countdown, mocks, checklists", goBack)
+                sub == "course" -> HeaderBanner(d.courses.firstOrNull { it.id == courseId }?.name ?: "Course", null, goBack)
+                sub == "alarms" -> HeaderBanner("My alarms", "Study schedule", goBack)
+                sub == "alarmEdit" -> HeaderBanner(if (editId == 0L) "New alarm" else "Edit alarm", null, goBack)
+                tab == 1 -> HeaderBanner("Weekly timetable", "Plan each day")
+                tab == 2 -> HeaderBanner("Courses", "Topics, notes, assignments, questions")
+                tab == 3 -> HeaderBanner("Progress", "Calculated from your real activity")
+                tab == 4 -> HeaderBanner("Settings", "Theme, alarms, data")
+            }
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                when {
+                    sub == "timer" -> TimerScreen(d, p, vm) { sub = "" }
+                    sub == "exam" -> ExamScreen(d, p, vm) { sub = "" }
+                    sub == "course" -> CourseDetail(d, courseId, vm) { sub = "" }
+                    sub == "alarms" -> AlarmsScreen(d, vm) { id -> editId = id; sub = "alarmEdit" }
+                    sub == "alarmEdit" -> AlarmEditScreen(d, p, editId, vm) { sub = "alarms" }
+                    tab == 0 -> HomeScreen(
+                        d, p, vm,
+                        openTimer = { sub = "timer" },
+                        openExam = { sub = "exam" },
+                        openAlarms = { sub = "alarms" },
+                        editAlarm = { id -> editId = id; sub = "alarmEdit" }
+                    )
+                    tab == 1 -> TimetableScreen(d, vm)
+                    tab == 2 -> CoursesScreen(d) { id -> courseId = id; sub = "course" }
+                    tab == 3 -> ProgressScreen(d, p)
+                    else -> SettingsScreen(d, p, vm) { sub = "alarms" }
+                }
             }
         }
     }
