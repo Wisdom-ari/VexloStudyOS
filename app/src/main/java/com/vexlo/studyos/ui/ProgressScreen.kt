@@ -21,11 +21,11 @@ fun ProgressScreen(d: Data, p: Prefs) {
     val byDate = Logic.minutesByDate(d.sessions)
     val totalMin = byDate.values.sum()
     val weekStart = today.minusDays(today.dayOfWeek.value - 1L)
-    val weekMin = (0..6).sumOf { byDate[weekStart.plusDays(it.toLong()).toString()] ?: 0 }
+    val weekMin: Int = (0..6).map { byDate[weekStart.plusDays(it.toLong()).toString()] ?: 0 }.sum()
     val days = (6 downTo 0).map { today.minusDays(it.toLong()) }
     val dayMin = days.map { byDate[it.toString()] ?: 0 }
     val weeks = (5 downTo 0).map { weekStart.minusWeeks(it.toLong()) }
-    val weekTotals = weeks.map { ws -> (0..6).sumOf { byDate[ws.plusDays(it.toLong()).toString()] ?: 0 } }
+    val weekTotals: List<Int> = weeks.map { ws -> (0..6).map { byDate[ws.plusDays(it.toLong()).toString()] ?: 0 }.sum() }
     val topicsDone = d.topics.count { it.done }
     val assignDone = d.assignments.count { it.done }
     val attempted = d.questions.count { it.attempted }

@@ -112,7 +112,7 @@ object Logic {
     fun achievements(d: Data, today: LocalDate): List<Pair<String, Boolean>> {
         val byDate = minutesByDate(d.sessions)
         val weekStart = today.minusDays(today.dayOfWeek.value - 1L)
-        val weekMin = (0..6).sumOf { byDate[weekStart.plusDays(it.toLong()).toString()] ?: 0 }
+        val weekMin: Int = (0..6).map { byDate[weekStart.plusDays(it.toLong()).toString()] ?: 0 }.sum()
         return listOf(
             "First study hour logged" to (byDate.values.sum() >= 60),
             "Hit the daily target at least once" to (byDate.values.any { it >= 480 }),

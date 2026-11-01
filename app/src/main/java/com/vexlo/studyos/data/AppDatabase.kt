@@ -29,7 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext, AppDatabase::class.java, FILE_NAME
                 )
                     // Single-file journal mode keeps backup / restore a plain file copy.
-                    .setJournalMode(JournalMode.TRUNCATE)
+                    .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                     .build()
                     .also { instance = it }
             }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -17,7 +18,8 @@ private val DAY_SHORT = listOf("M", "T", "W", "T", "F", "S", "S")
 
 @Composable
 fun TimetableScreen(d: Data, vm: MainViewModel) {
-    var day by rememberSaveable { mutableStateOf(Logic.today().dayOfWeek.value) }
+    var dayIdx by rememberSaveable { mutableStateOf(Logic.today().dayOfWeek.value.dec()) }
+    val day: Int = dayIdx.inc()
     var adding by remember { mutableStateOf(false) }
     val items = d.timetable.filter { it.dayOfWeek == day }.sortedBy { it.sortOrder }
     val date = Logic.today().plusDays((day - Logic.today().dayOfWeek.value).toLong())
@@ -27,10 +29,10 @@ fun TimetableScreen(d: Data, vm: MainViewModel) {
         item { H1("Weekly timetable") }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                DAY_SHORT.forEachIndexed { i, s -> DayDot(s, day == i + 1) { day = i + 1 } }
+                DAY_SHORT.forEachIndexed { i, s -> DayDot(s, dayIdx == i) { dayIdx = i } }
             }
         }
-        item { H2(DAY_NAMES[day - 1]) }
+        item { H2(DAY_NAMES[dayIdx]) }
         item { Muted("Subjects for this day. The day's study sessions are shared out between them in order.") }
         if (items.isEmpty()) item { Muted("Nothing planned. Add a subject or activity below.") }
         items.forEach { t ->
@@ -67,7 +69,7 @@ fun TimetableScreen(d: Data, vm: MainViewModel) {
         AlertDialog(
             onDismissRequest = { adding = false },
             containerColor = Surface1,
-            title = { Text("Add to ${DAY_NAMES[day - 1]}") },
+            title = { Text("Add to ${DAY_NAMES[dayIdx]}") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     DropdownField("Course", listOf<Pair<Long?, String>>(null to "Custom activity") + d.courses.map { it.id to it.name }, course, { course = it })
